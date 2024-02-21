@@ -18,7 +18,7 @@ function onSubmitForm(){
   const items = JSON.parse(localStorage.getItem("items"))||[];
 
   // 追加する内容のオブジェクトを作成
-  const newItems = {
+  const newItem = {
     id: items.length,
     content: todo.value,
     limit: todoDate.value,
@@ -27,11 +27,9 @@ function onSubmitForm(){
   };
 
   // 作成したオブジェクトnewItemsをitemsに追加する
-  items.push(newItems);
+  items.push(newItem);
   // 配列をローカルストレージに保存
   localStorage.setItem("items",JSON.stringify(items));
-
-
 }
 
 
