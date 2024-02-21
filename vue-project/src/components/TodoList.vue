@@ -5,8 +5,14 @@ import { statuses } from '../const/statuses';
 const todo = ref("");
 const todoDate = ref("");
 
+const isError = ref(false);
 // 登録ボタンクリックで実行される関数
 function onSubmitForm(){
+  if(todo.value == "" || todoDate.value == ""){
+    isError.value = true;
+    event.preventDefault();
+    return;
+  }
   // ローカルストレージからデータを取得、配列で扱えるように変換
   // "items"がkeyにあたる
   const items = JSON.parse(localStorage.getItem("items"))||[];
@@ -33,6 +39,7 @@ function onSubmitForm(){
 
 <template>
   <div>
+    <p v-if="isError">タスク・期限の両方を入力してください。</p>
     <form @submit="onSubmitForm">
       <label>Todo</label>
       <input type="text" v-model="todo"/>
