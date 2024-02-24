@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { statuses } from '../const/statuses';
+import '../assets/main.css';
 
 const todo = ref("");
 const todoDate = ref("");
@@ -31,7 +32,6 @@ function onSubmitForm(){
   // 配列をローカルストレージに保存
   localStorage.setItem("items",JSON.stringify(items));
 }
-
 
 </script>
 
