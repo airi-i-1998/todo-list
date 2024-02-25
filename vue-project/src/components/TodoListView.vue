@@ -10,16 +10,30 @@ let todoLimit = ref();
 let todoState = ref();
 
 function onEdit(id) {
+  let isOnEdit = false;
+  items.value.map((item) => {
+    if (item.onEdit) {
+      isOnEdit = true;
+      return;
+    }
+  });
+  if (isOnEdit) {
+    errMsg.value = "他の編集中のTaskがあります！";
+    isError.value = true;
+
+    return;
+  }
   todoContent.value = items.value[id].content;
   todoLimit.value = items.value[id].limit;
   todoState.value = items.value[id].state;
   items.value[id].onEdit = true;
 }
 
-const isError =ref(false);
+let isError = ref(false);
+let errMsg = ref("");
 
 function onUpdated(id) {
-  if(todoContent.value == "" || todoLimit.value == ""){
+  if (todoContent.value == "" || todoLimit.value == "") {
     isError.value = true;
     return;
   }
@@ -36,49 +50,113 @@ function onUpdated(id) {
   // 更新が完了したらisErrorはfalseになるように設定
   isError.value = false;
 }
+
+let isShowModal = ref(false);
+
+function showDeleteModal(id) {
+  isShowModal.value = true;
+  deleteItemId = id;
+  deleteItemContent = items.value[id].content;
+}
+
+function onDeleteItem() {
+  items.value.splice(deleteItemId, 1);
+  isShowModal.value = false;
+}
+
+function onReturn(id) {
+  isShowModal.value = false;
+  deleteItemId = id;
+}
+
+// 削除対象のアイテムのID
+let deleteItemId = "";
+let deleteItemContent = ref();
+
+// IDだけを配列のindexに合わせる
+// 各要素ごとに関数を適用させて、新しいオブジェクトを作成する
+items.value = items.value.map((item, index) => ({
+  id: index,
+  content: item.content,
+  limit: item.limit,
+  state: item.state,
+  onEdit: item.onEdit,
+}));
+localStorage.setItem("items", JSON.stringify(items.value));
+
+const today = new Date();
+
+function sortByLimit(){
+  // items.value.sort メソッドでitems配列をソート
+  //2つのオブジェクトを比較して、日付が過去のものから並び替えられるように設定
+  items.value.sort((a,b) => new Date(a.limit) - new Date(b.limit));
+  localStorage.setItem("items",JSON.stringify(items.value));
+}
+
+function sortById(){
+  items.value.sort((a,b) => a.id - b.id);
+  localStorage.setItem("items",JSON.stringify(items.value));
+}
+
 </script>
 
 <template>
-  <id>
-    <tr>
-      <th class="th-id">ID</th>
-      <th class="th-content">Todo</th>
-      <th class="th-limit">期日</th>
-      <th class="th-state">Status</th>
-      <th class="th-edit">Edit</th>
-      <th class="th-delete">Delete</th>
-    </tr>
-    <p v-if="isError">タスク・期限の両方を入力してください。</p>
-    <tr v-for="item in items" :key="item.id">
-      <td>{{ item.id }}</td>
-      <td>
-        <span v-if="!item.onEdit">{{ item.content }}</span>
-        <input v-else type="text" v-model="todoContent" />
-      </td>
-      <td>
-        <span v-if="!item.onEdit">{{ item.limit }}</span>
-        <input v-else type="date" v-model="todoLimit" />
-      </td>
-      <td>
-        <span v-if="!item.onEdit">{{ item.state.value }}</span>
-        <select v-else v-model="todoState">
-          <option
-            v-for="state in statuses"
-            :key="state.id"
-            :value="state"
-            :selected="state.id == item.state.id"
-          >
-            {{ state.value }}
-          </option>
-        </select>
-      </td>
-      <td>
-        <!-- Editボタンが押されたら、onEdit()メソッドが呼び出されるように設定
-        どのTodoが呼び出されるのか、引数にidをもたせる -->
-        <button v-if="!item.onEdit" @click="onEdit(item.id)">Edit</button>
-        <button v-else @click="onUpdated(item.id)">Done</button>
-      </td>
-      <td><button>Delete</button></td>
-    </tr>
-  </id>
+  <div>
+    <!-- テーブル部分 -->
+    <table>
+      <!-- テーブルヘッダー -->
+      <tr>
+        <th class="th-id">ID<button @click="sortById()" class="button">👇</button></th>
+        <th class="th-content">Todo</th>
+        <th class="th-limit">期日<button @click="sortByLimit()" class="button">👇</button></th>
+        <th class="th-state">Status</th>
+        <th class="th-edit">Edit</th>
+        <th class="th-delete">Delete</th>
+      </tr>
+
+      <!-- エラーメッセージ -->
+      <p v-if="isError" class="error">{{ errMsg }}</p>
+
+      <!-- テーブルデータ -->
+      <tr v-for="item in items" :key="item.id" :class="{red: new Date(item.limit) < today}">
+        <!-- 各列のデータ -->
+        <td>{{ item.id }}</td>
+        <td>
+          <span v-if="!item.onEdit">{{ item.content }}</span>
+          <input v-else type="text" v-model="todoContent" />
+        </td>
+        <td>
+          <span v-if="!item.onEdit">{{ item.limit }}</span>
+          <input v-else type="date" v-model="todoLimit" />
+        </td>
+        <td>
+          <span v-if="!item.onEdit">{{ item.state.value }}</span>
+          <select v-else v-model="todoState">
+            <option
+              v-for="state in statuses"
+              :key="state.id"
+              :value="state"
+              :selected="state.id == item.state.id"
+            >
+              {{ state.value }}
+            </option>
+          </select>
+        </td>
+        <td>
+          <button v-if="!item.onEdit" @click="onEdit(item.id)">Edit</button>
+          <button v-else @click="onUpdated(item.id)">Done</button>
+        </td>
+        <td><button @click="showDeleteModal(item.id)">Delete</button></td>
+      </tr>
+    </table>
+
+    <!-- モーダル部分 -->
+    <div class="modal" v-if="isShowModal">
+      <div class="modal-content">
+        <p>本当に【{{ deleteItemContent }}】削除してもよろしいでしょうか？</p>
+        <button @click="onDeleteItem()" class="modal-button">はい</button>
+        <button @click="onReturn()">キャンセル</button>
+      </div>
+    </div>
+  </div>
 </template>
