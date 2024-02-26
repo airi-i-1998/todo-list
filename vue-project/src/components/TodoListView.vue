@@ -101,14 +101,14 @@ function sortById(){
 </script>
 
 <template>
-  <div>
+  <div class="todo">
     <!-- テーブル部分 -->
     <table>
       <!-- テーブルヘッダー -->
       <tr>
-        <th class="th-id">ID<button @click="sortById()" class="button">👇</button></th>
+        <th class="th-id" colspan="2">ID<button @click="sortById()" class="sort-button">👇</button></th>
         <th class="th-content">Todo</th>
-        <th class="th-limit">期日<button @click="sortByLimit()" class="button">👇</button></th>
+        <th class="th-limit" colspan="2">期日<button @click="sortByLimit()" class="sort-button">👇</button></th>
         <th class="th-state">Status</th>
         <th class="th-edit">Edit</th>
         <th class="th-delete">Delete</th>
@@ -120,16 +120,16 @@ function sortById(){
       <!-- テーブルデータ -->
       <tr v-for="item in items" :key="item.id" :class="{red: new Date(item.limit) < today}">
         <!-- 各列のデータ -->
-        <td>{{ item.id }}</td>
-        <td>
+        <td class="td-id" colspan="2">{{ item.id }}</td>
+        <td class="td-content">
           <span v-if="!item.onEdit">{{ item.content }}</span>
           <input v-else type="text" v-model="todoContent" />
         </td>
-        <td>
+        <td class="td-limit" colspan="2">
           <span v-if="!item.onEdit">{{ item.limit }}</span>
           <input v-else type="date" v-model="todoLimit" />
         </td>
-        <td>
+        <td class="td-state">
           <span v-if="!item.onEdit">{{ item.state.value }}</span>
           <select v-else v-model="todoState">
             <option
@@ -142,11 +142,11 @@ function sortById(){
             </option>
           </select>
         </td>
-        <td>
-          <button v-if="!item.onEdit" @click="onEdit(item.id)">Edit</button>
-          <button v-else @click="onUpdated(item.id)">Done</button>
+        <td class="td-edit">
+          <button v-if="!item.onEdit" @click="onEdit(item.id)" class="task-button">Edit</button>
+          <button v-else @click="onUpdated(item.id)" class="task-button">Done</button>
         </td>
-        <td><button @click="showDeleteModal(item.id)">Delete</button></td>
+        <td class="td-delete"><button @click="showDeleteModal(item.id)" class="task-button">Delete</button></td>
       </tr>
     </table>
 

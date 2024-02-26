@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import { statuses } from '../const/statuses';
-import '../assets/main.css';
 
 const todo = ref("");
 const todoDate = ref("");
@@ -36,14 +35,14 @@ function onSubmitForm(){
 </script>
 
 <template>
-  <div>
+  <div class="todo">
     <p v-if="isError">タスク・期限の両方を入力してください。</p>
-    <form @submit="onSubmitForm">
-      <label>Todo</label>
-      <input type="text" v-model="todo"/>
-      <label>期限</label>
-      <input type="date" v-model="todoDate"/>
-      <input type="submit" value="登録" />
+    <form @submit="onSubmitForm" class="form">
+        <label class="item">Todo</label>
+        <input type="text" v-model="todo" class="input-todo"/>
+        <label class="item">期限</label>
+        <input type="date" v-model="todoDate" class="input-todo"/>
+      <input type="submit" value="登録" class="registration"/>
     </form>
   </div>
 </template>
